@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding:UTF-8 -*-
 
-import os,requests,logging,bs4,time
+import os,requests,logging,bs4,time,json,csv,shelve
+from itertools import islice
 logging.basicConfig(level=logging.DEBUG,\
 	format='%(asctime)s - %(levelname)s - %(message)s')
 # logging.disable(logging.CRITICAL)
@@ -15,9 +16,11 @@ def set_env():
 	os.makedirs(savePath,exist_ok = True)
 	os.chdir(savePath)
 
-def getBooks(url,dict):
+def getRankBooks(url):
 	logging.debug('Getting books from qidian...')
 	bookList = []
+	with open('type_dict.json','r') as jFile:
+		dict = json.load(jFile)
 	for d in dict:
 		link = url + str(dict[d])
 		res=requests.get(link)
@@ -34,15 +37,52 @@ def getBooks(url,dict):
 
 def writeList(list):
 	logging.debug('Writting data in BooksName.txt')
-	file = open('BooksName.txt','a')
-	file.write(time.strftime("%Y-%m-%d %H:%M:%S")+'\r\n')
+	file = open('BooksName.txt','w')
+	file.write('Upadte Time: ' + time.strftime("%Y-%m-%d %H:%M:%S")+'\r\n')
 	for e in list:
 		file.write(str(e)+'\r\n')
 	file.close()
 
+def searchBook(s_url,list):
+	searchCSV = []
+	for e in islice(list,1,None):
+		link = s_url + e
+		logging.debug(f'Searching: {link}')
+		try:
+			res = requests.get(link)
+			res.raise_for_status()
+			res.encoding = 'gbk'
+		except:
+			searchCSV.append([e,link,'Connect_Error'])
+			logging.debug(f'Connnect_Error:{e} - {link}')
+			continue
+		soup = bs4.BeautifulSoup(res.text,features='html.parser')
+		sElem = soup.select('td.odd a')
+		logging.debug(f'Result: {len(sElem)}')
+		if len(sElem) == 0:
+			logging.debug(f'Not Found: {e}')
+		tmp = []
+		for se in sElem:
+			if e.replace('\n','') == se.get_text():
+				searchCSV.append([e,se.get('href'),'Succeed'])
+	return searchCSV
+			
+
 if __name__ == '__main__':
 	url = 'https://www.qidian.com/rank?chn='
+	s_url = 'https://www.biquge5200.cc/modules/article/search.php?searchkey='
 	set_env()
-	writeList(getBooks(url,typeDict))
+	shelfFile = shelve.open('mydata')
+	shelfFile['url'] = url
+	shelfFile['s_url'] = s_url
+	shelFile.close()
+	file = open('BooksName.txt')
+	fList = file.readlines()
+	file.close
+	s_CSV = searchBook(s_url,fList)
+	with open('searchBook.csv','w') as csvFile:
+		outputWriter = csv.writer(csvFile)
+		for i in range(len(s_CSV)):
+			outputWriter.writerow(s_CSV[i])
 
 
