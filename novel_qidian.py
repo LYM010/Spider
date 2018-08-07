@@ -72,17 +72,25 @@ if __name__ == '__main__':
 	url = 'https://www.qidian.com/rank?chn='
 	s_url = 'https://www.biquge5200.cc/modules/article/search.php?searchkey='
 	set_env()
+
+	# 保存变量
 	shelfFile = shelve.open('mydata')
 	shelfFile['url'] = url
 	shelfFile['s_url'] = s_url
-	shelFile.close()
+	shelfFile.close()
+
+	# 读取排行榜
+	writeList(getRankBooks(url))
+
 	file = open('BooksName.txt')
 	fList = file.readlines()
 	file.close
 	s_CSV = searchBook(s_url,fList)
-	with open('searchBook.csv','w') as csvFile:
+	with open('searchBook.csv','w',newline='') as csvFile:
 		outputWriter = csv.writer(csvFile)
 		for i in range(len(s_CSV)):
 			outputWriter.writerow(s_CSV[i])
-
-
+'''
+	with open('type_dict.json','w') as jFile:
+		json.dump(typeDict,jFile)
+'''
