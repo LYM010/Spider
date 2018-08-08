@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
-import logging,os,json,requests,csv
+import logging,os,json,requests,csv，time
 from bs4 import BeautifulSoup
 
 logging.basicConfig(level = logging.DEBUG,\
@@ -23,7 +23,7 @@ def read_type_dict():
 		return json.load(jFile)
 
 # Get book's name from qidian.com's rank
-def get_book_rank(url,dictionary):
+def get_book_rank(url,*dictionary):
 	rankSoup = []
 	for e in dictionary:
 		link = url + str(dictionary[e])
@@ -39,14 +39,14 @@ def get_book_rank(url,dictionary):
 	return rankSoup
 
 # Analysis BeautifulSoup with appointed rule.
-def analysis_soup(soupList,rule):
+def analysis_soup(*soupList,rule):
 	logging.debug('Analysising BeartifulSoup...')
 	for soup in soupList:
 		result = soup.select(rule)
 	return result
 
 # Get book's name from rank
-def get_book_name(elems):
+def get_book_name(*elems):
 	logging.debug("Get book's name from rank.")
 	bookNameList = []
 	if len(elems) == 0:
@@ -58,7 +58,7 @@ def get_book_name(elems):
 	return list(bookNameList)
 
 # write data in csv file
-def write_data_in_csv(list,file):
+def write_data_in_csv(*list,file):
 	for line in list:
 		with open(file,'w',newline='') as outputFile:
 			outputWriter = csv.writer(outputFile)
@@ -68,6 +68,16 @@ def write_data_in_csv(list,file):
 # dataStructure = [url,aim,status,level,rules,saveFile,time]
 # aim = [content,contents,urlPath]
 # status = [Doing,Done,Todo,Time_out,Not_Found]
+def write_data_in_missionList(url,aim='URLPATH',status='TODO',\
+	level=1,rules='',saveFile='mission.csv',\
+	updateTime=time.strftime("%Y-%m-%d %H:%M:%S")):
+	with open(saveFile,'w',newline='') as csvFile:
+		outputWriter = csv.writer(csvFile)
+		outputWriter.writerow([url,aim,status,level,rules,saveFile,updateTime])
+
+def read_data_in_missionList():
+	
+
 if __name__ == '__main__':
 	set_env()
 	typeDict = read_type_dict()
