@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
-import logging,os,json,requests,csv，time
+import logging,os,json,requests,csv,time
 from bs4 import BeautifulSoup
 
 logging.basicConfig(level = logging.DEBUG,\
@@ -75,11 +75,15 @@ def write_data_in_missionList(url,aim='URLPATH',status='TODO',\
 		outputWriter = csv.writer(csvFile)
 		outputWriter.writerow([url,aim,status,level,rules,saveFile,updateTime])
 
-def read_data_in_missionList():
-	
+def read_data_in_missionList(fileName):
+	with open(fileName) as csvFile:
+		csvReader = csv.reader(csvFile)
+		missionList = list(csvReader)
+	return missionList
 
 if __name__ == '__main__':
 	set_env()
 	typeDict = read_type_dict()
 	qdRule = 'a[data-eid="qd_C40"]'
-	qdurl = 'https://www.qidian.com/rank?chn='
+	qdUrl = 'https://www.qidian.com/rank?chn='
+	write_data_in_missionList(qdUrl)
