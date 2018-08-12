@@ -23,46 +23,45 @@ def read_type_dict():
 		return json.load(jFile)
 
 # Get book's name from qidian.com's rank
-def get_book_rank(url,*dictionary):
-	rankSoup = []
+def get_book_rank(url,rule,dictionary):
 	for e in dictionary:
 		link = url + str(dictionary[e])
 		logging.debug(f'Linking to: {link}')
 		try:
 			res = requests.get(link)
-			res.raise_for_status()
 			res.encoding = 'utf-8'
-			rankSoup.append(BeautifulSoup(res.text,features='html.parser'))
+			result = BeautifulSoup(res.text,features='html.parser').select(rule)
+			time.sleep(1)
+			if len(result) == 0:
+				logging.debug('Not Found.')
+				continue
+			else:
+				for e in result:
+					logging.debug(f'Saving:{e.get_text()}')
+					with open('bookNames.txt','a',encoding='utf-8') as bookNameFile:
+						bookNameFile.write(e.get_text()+'\n')
 		except:
 			logging.debug(f'ConnectError: {link}')
 			continue
-	return rankSoup
+	return
+# delete repeat data.
+def delete_repeat(old,new):
+	with open(old,'r',encoding='utf-8') as oldFile,\
+	 open(new,'a',encoding='utf-8') as newFile:
+		content = oldFile.readlines()
+		content_after = []
+		for line in content:
+			if line not in content_after:
+				newFile.write(line)
+				content_after.append(line)
 
-# Analysis BeautifulSoup with appointed rule.
-def analysis_soup(*soupList,rule):
-	logging.debug('Analysising BeartifulSoup...')
-	for soup in soupList:
-		result = soup.select(rule)
-	return result
-
-# Get book's name from rank
-def get_book_name(*elems):
-	logging.debug("Get book's name from rank.")
-	bookNameList = []
-	if len(elems) == 0:
-		return 0
-	else:
-		for e in elems:
-			if e.get_text() not in bookNameList:
-				bookNameList.append(e.get_text())
-	return list(bookNameList)
 
 # write data in csv file
-def write_data_in_csv(*list,file):
-	for line in list:
-		with open(file,'w',newline='') as outputFile:
-			outputWriter = csv.writer(outputFile)
-			outputWriter.writerow(line)
+def write_data_in_csv(line,file):
+	logging.debug(f'Saving: {line} ...')
+	with open(file,'w',newline='',encoding='utf-8') as outputFile:
+		outputWriter = csv.writer(outputFile)
+		outputWriter.writerow(list(line))
 
 # Write data in MissionList file.
 # dataStructure = [url,aim,status,level,rules,saveFile,time]
@@ -71,11 +70,11 @@ def write_data_in_csv(*list,file):
 def write_data_in_missionList(url,aim='URLPATH',status='TODO',\
 	level=1,rules='',saveFile='mission.csv',\
 	updateTime=time.strftime("%Y-%m-%d %H:%M:%S")):
-	with open(saveFile,'w',newline='') as csvFile:
+	with open('mission.csv','w',newline='') as csvFile:
 		outputWriter = csv.writer(csvFile)
 		outputWriter.writerow([url,aim,status,level,rules,saveFile,updateTime])
 
-def read_data_in_missionList(fileName):
+def read_data_from_missionList(fileName='mission.csv'):
 	with open(fileName) as csvFile:
 		csvReader = csv.reader(csvFile)
 		missionList = list(csvReader)
@@ -83,7 +82,11 @@ def read_data_in_missionList(fileName):
 
 if __name__ == '__main__':
 	set_env()
-	typeDict = read_type_dict()
-	qdRule = 'a[data-eid="qd_C40"]'
-	qdUrl = 'https://www.qidian.com/rank?chn='
-	write_data_in_missionList(qdUrl)
+	# set seed.
+	write_data_in_missionList('https://www.qidian.com/rank?chn=',\
+		rules='a[data-eid="qd_C40"]',saveFile='booknames.txt')
+	# get books rank
+	ml = read_data_from_missionList()
+	get_book_rank(ml[0][0],ml[0][4],read_type_dict())
+
+#	get_book_rank(ml[0][0],typeDict,ml[0][4])
