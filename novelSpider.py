@@ -38,7 +38,7 @@ def get_book_rank(url,rule,dictionary):
 			else:
 				for e in result:
 					logging.debug(f'Saving:{e.get_text()}')
-					with open('bookNames.txt','a',encoding='utf-8') as bookNameFile:
+					with open('booksName.txt','a',encoding='utf-8') as bookNameFile:
 						bookNameFile.write(e.get_text()+'\n')
 		except:
 			logging.debug(f'ConnectError: {link}')
@@ -84,9 +84,12 @@ if __name__ == '__main__':
 	set_env()
 	# set seed.
 	write_data_in_missionList('https://www.qidian.com/rank?chn=',\
-		rules='a[data-eid="qd_C40"]',saveFile='booknames.txt')
+		rules='a[data-eid="qd_C40"]',saveFile='booksName.txt')
 	# get books rank
 	ml = read_data_from_missionList()
 	get_book_rank(ml[0][0],ml[0][4],read_type_dict())
+	delete_repeat(ml[0][5],'Clean'+ml[0][5])
+	write_data_in_missionList('https://www.biquge5200.cc/modules/article/search.php?searchkey=',\
+		aim = 'contents',level = 2,rules = 'td.odd a')
 
 #	get_book_rank(ml[0][0],typeDict,ml[0][4])
