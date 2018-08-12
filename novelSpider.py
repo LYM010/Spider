@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
-import logging,os,json,requests,csv,time,openpyxl
+import logging,os,json,requests,csv,time,openpyxl,re,threading
 from bs4 import BeautifulSoup
 
 logging.basicConfig(level = logging.DEBUG,\
@@ -80,20 +80,25 @@ def read_data_from_missionList(fileName='mission.csv'):
 		missionList = list(csvReader)
 	return missionList
 
-def read_excel(file='mission.xlsx'):
+def excel_max_row(file = 'mission.xlsx'):
 	wb = openpyxl.load_workbook(file,read_only = True)
 	sheet = wb['mission']
-	for rowNum in range(1,sheet.max_row+1):
+	return sheet.max_row+1
+
+def read_excel(startNum,endNum,file='mission.xlsx'):
+	wb = openpyxl.load_workbook(file,read_only = True)
+	sheet = wb['mission']
+	for rowNum in range(startNum,endNum):
 		logging.debug(f'Reading row {rowNum}')
 		yield {
 		'rowNum':rowNum,
-		'url':sheet.cell(row=rowNum,column=1),
-		'aim':sheet.cell(row=rowNum,column=2),
-		'status':sheet.cell(row=rowNum,column=3),
-		'level':sheet.cell(row=rowNum,column=4),
-		'rules':sheet.cell(row=rowNum,column=5),
-		'saveFile':sheet.cell(row=rowNum,column=6),
-		'time':sheet.cell(row=rowNum,column=7)
+		'url':sheet.cell(row=rowNum,column=1).value,
+		'aim':sheet.cell(row=rowNum,column=2).value,
+		'status':sheet.cell(row=rowNum,column=3).value,
+		'level':sheet.cell(row=rowNum,column=4).value,
+		'rules':sheet.cell(row=rowNum,column=5).value,
+		'saveFile':sheet.cell(row=rowNum,column=6).value,
+		'time':sheet.cell(row=rowNum,column=7).value
 		}
 
 def write_in_excel(dict,file='mission.xlsx'):
@@ -114,7 +119,32 @@ def write_in_excel(dict,file='mission.xlsx'):
 	wb.save(file)
 
 def search_book(url,rule,charMode='gbk'):
-	
+	try:
+		res = requests.get(url)
+		res.encoding=charMode
+		result = BeautifulSoup(res.text,features='html.parser').select(rule)
+		if len(result) == 0:
+			logging.debug('Not Found.')
+			return None
+		else:
+			nameRegex = re.compile('[\u4e00-\u9fa5]+')
+			mo = nameRegex.search(url)
+			if mo:
+				for elem in result:
+					if mo.group() == elem.get_text():
+						return elem.get('href')
+	except:
+		logging.debug('Connection Error.')
+		return None
+
+def run(startNum,endNum):
+	for d in read_excel(startNum,endNum):
+		time.sleep(1)
+		link = search_book(d['url'],d['rules'])
+		if link:
+			print(link)
+		else:
+			print('Not Found.')
 
 if __name__ == '__main__':
 	set_env()
@@ -134,10 +164,15 @@ if __name__ == '__main__':
 #			logging.debug(f'Add url to search:{line.strip()}')
 #			write_data_in_missionList('https://www.biquge5200.cc/modules/article/search.php?searchkey='+line.strip(),\
 #				aim = 'contents',level = 2,rules = 'td.odd a')
-	flag = 0
-	for d in read_excel():
-		if flag == 1:
-			break
-		else:
-			flag += 1
-			print(type(d['rowNum']))
+	run(1,10)
+'''
+	downloadThreads = []
+	for i in (1,20,5):
+		logging.debug(f'Start Thread:{i}')
+		dlThread = threading.Thread(target=read_excel,args=(i,i+4))
+		downloadThreads.append(dlThread)
+		dlThread.start()
+
+	for dlt in downloadThreads:
+		dlt.join()
+'''
