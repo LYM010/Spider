@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
-import logging,os,json,requests,csv,time
+import logging,os,json,requests,csv,time,openpyxl
 from bs4 import BeautifulSoup
 
 logging.basicConfig(level = logging.DEBUG,\
@@ -70,7 +70,7 @@ def write_data_in_csv(line,file):
 def write_data_in_missionList(url,aim='URLPATH',status='TODO',\
 	level=1,rules='',saveFile='mission.csv',\
 	updateTime=time.strftime("%Y-%m-%d %H:%M:%S")):
-	with open('mission.csv','w',newline='') as csvFile:
+	with open('mission.csv','a',newline='',encoding='utf-8') as csvFile:
 		outputWriter = csv.writer(csvFile)
 		outputWriter.writerow([url,aim,status,level,rules,saveFile,updateTime])
 
@@ -80,16 +80,64 @@ def read_data_from_missionList(fileName='mission.csv'):
 		missionList = list(csvReader)
 	return missionList
 
+def read_excel(file='mission.xlsx'):
+	wb = openpyxl.load_workbook(file,read_only = True)
+	sheet = wb['mission']
+	for rowNum in range(1,sheet.max_row+1):
+		logging.debug(f'Reading row {rowNum}')
+		yield {
+		'rowNum':rowNum,
+		'url':sheet.cell(row=rowNum,column=1),
+		'aim':sheet.cell(row=rowNum,column=2),
+		'status':sheet.cell(row=rowNum,column=3),
+		'level':sheet.cell(row=rowNum,column=4),
+		'rules':sheet.cell(row=rowNum,column=5),
+		'saveFile':sheet.cell(row=rowNum,column=6),
+		'time':sheet.cell(row=rowNum,column=7)
+		}
+
+def write_in_excel(dict,file='mission.xlsx'):
+	wb = openpyxl.load_workbook(file,encoding='utf-8')
+	sheet = wb['mission']
+	if dict['rowNum'] == 0:
+		logging.debug(f'Append data in row {sheet.max_row+1}')
+		sheet.append(dict)
+	else:
+		logging.debug(f'Updating data in row {dict["rowNum"]}')
+		sheet.cell(row=dict['rowNum'],column=1).value=dict['url']
+		sheet.cell(row=dict['rowNum'],column=2).value=dict['aim']
+		sheet.cell(row=dict['rowNum'],column=3).value=dict['status']
+		sheet.cell(row=dict['rowNum'],column=4).value=dict['level']
+		sheet.cell(row=dict['rowNum'],column=5).value=dict['rules']
+		sheet.cell(row=dict['rowNum'],column=6).value=dict['saveFile']
+		sheet.cell(row=dict['rowNum'],column=7).value=dict['time']
+	wb.save(file)
+
+def search_book(url,rule,charMode='gbk'):
+	
+
 if __name__ == '__main__':
 	set_env()
 	# set seed.
-	write_data_in_missionList('https://www.qidian.com/rank?chn=',\
-		rules='a[data-eid="qd_C40"]',saveFile='booksName.txt')
-	# get books rank
-	ml = read_data_from_missionList()
-	get_book_rank(ml[0][0],ml[0][4],read_type_dict())
-	delete_repeat(ml[0][5],'Clean'+ml[0][5])
-	write_data_in_missionList('https://www.biquge5200.cc/modules/article/search.php?searchkey=',\
-		aim = 'contents',level = 2,rules = 'td.odd a')
+#	write_data_in_missionList('https://www.qidian.com/rank?chn=',rules='a[data-eid="qd_C40"]',saveFile='booksName.txt')
 
-#	get_book_rank(ml[0][0],typeDict,ml[0][4])
+	# get books rank
+#	ml = read_data_from_missionList()
+#	get_book_rank(ml[0][0],ml[0][4],read_type_dict())
+#	delete_repeat(ml[0][5],'Clean'+ml[0][5])
+
+#	write_data_in_missionList('https://www.biquge5200.cc/modules/article/search.php?searchkey=',\
+#		aim = 'contents',level = 2,rules = 'td.odd a')
+
+#	with open('CleanbooksName.txt','r',encoding='utf-8') as bookText:
+#		for line in bookText.readlines():
+#			logging.debug(f'Add url to search:{line.strip()}')
+#			write_data_in_missionList('https://www.biquge5200.cc/modules/article/search.php?searchkey='+line.strip(),\
+#				aim = 'contents',level = 2,rules = 'td.odd a')
+	flag = 0
+	for d in read_excel():
+		if flag == 1:
+			break
+		else:
+			flag += 1
+			print(type(d['rowNum']))
