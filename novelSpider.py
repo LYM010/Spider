@@ -102,20 +102,22 @@ def read_excel(startNum,endNum,file='mission.xlsx'):
 		}
 
 def write_in_excel(dict,file='mission.xlsx'):
-	wb = openpyxl.load_workbook(file,encoding='utf-8')
+	wb = openpyxl.load_workbook(file)
 	sheet = wb['mission']
+	location = 0
 	if dict['rowNum'] == 0:
 		logging.debug(f'Append data in row {sheet.max_row+1}')
-		sheet.append(dict)
+		location = sheet.max_row+1
 	else:
 		logging.debug(f'Updating data in row {dict["rowNum"]}')
-		sheet.cell(row=dict['rowNum'],column=1).value=dict['url']
-		sheet.cell(row=dict['rowNum'],column=2).value=dict['aim']
-		sheet.cell(row=dict['rowNum'],column=3).value=dict['status']
-		sheet.cell(row=dict['rowNum'],column=4).value=dict['level']
-		sheet.cell(row=dict['rowNum'],column=5).value=dict['rules']
-		sheet.cell(row=dict['rowNum'],column=6).value=dict['saveFile']
-		sheet.cell(row=dict['rowNum'],column=7).value=dict['time']
+		location = dict['rowNum']
+	sheet.cell(row=location,column=1).value=dict['url']
+	sheet.cell(row=location,column=2).value=dict['aim']
+	sheet.cell(row=location,column=3).value=dict['status']
+	sheet.cell(row=location,column=4).value=dict['level']
+	sheet.cell(row=location,column=5).value=dict['rules']
+	sheet.cell(row=location,column=6).value=dict['saveFile']
+	sheet.cell(row=location,column=7).value=dict['time']
 	wb.save(file)
 
 def search_book(url,rule,charMode='gbk'):
@@ -139,12 +141,19 @@ def search_book(url,rule,charMode='gbk'):
 
 def run(startNum,endNum):
 	for d in read_excel(startNum,endNum):
-		time.sleep(1)
-		link = search_book(d['url'],d['rules'])
-		if link:
-			print(link)
+		if d['level'] != 2:
+			logging.debug('Not the target.')
+			continue
 		else:
-			print('Not Found.')
+			time.sleep(1)
+			link = search_book(d['url'],d['rules'])
+			if link:
+				write_in_excel({'rowNum':0,'url':link,'aim':'contents',\
+					'status':'TODO','level':d['level']+1,\
+					'rules':'dd a','saveFile':'mission.xlsx',\
+					'time':time.strftime("%Y-%m-%d %H:%M:%S")})
+			else:
+				logging.debug('Not Found.')
 
 if __name__ == '__main__':
 	set_env()
@@ -164,12 +173,13 @@ if __name__ == '__main__':
 #			logging.debug(f'Add url to search:{line.strip()}')
 #			write_data_in_missionList('https://www.biquge5200.cc/modules/article/search.php?searchkey='+line.strip(),\
 #				aim = 'contents',level = 2,rules = 'td.odd a')
-	run(1,10)
+	lg = excel_max_row()
+	run(101,lg+1)
 '''
 	downloadThreads = []
-	for i in (1,20,5):
+	for i in (1,lg,100):
 		logging.debug(f'Start Thread:{i}')
-		dlThread = threading.Thread(target=read_excel,args=(i,i+4))
+		dlThread = threading.Thread(target=run,args=(i,i+99))
 		downloadThreads.append(dlThread)
 		dlThread.start()
 
