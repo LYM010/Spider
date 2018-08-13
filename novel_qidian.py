@@ -61,7 +61,6 @@ def searchBook(s_url,list):
 		logging.debug(f'Result: {len(sElem)}')
 		if len(sElem) == 0:
 			logging.debug(f'Not Found: {e}')
-		tmp = []
 		for se in sElem:
 			if e.replace('\n','') == se.get_text():
 				searchCSV.append([e,se.get('href'),'Succeed'])
