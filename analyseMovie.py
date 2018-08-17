@@ -79,8 +79,8 @@ stopwords = STOPWORDS.copy()
 # print("STOPWORDS.copy()",help(STOPWORDS.copy()))
 
 
-wc = WordCloud(width=1024, height=768, background_color='black',
-               mask=backgroud_Image, font_path="simhei.ttf",
+wc = WordCloud(width=1024, height=768, background_color='white',
+               mask=backgroud_Image, font_path="hyxy.ttf",
                stopwords=stopwords, max_font_size=400,
                random_state=50)
 
