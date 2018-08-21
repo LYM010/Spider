@@ -38,4 +38,4 @@ while True:
         continue
     else:
         break
-geo.render('爱情公墓.html')
+geo.render('aqgw.html')
