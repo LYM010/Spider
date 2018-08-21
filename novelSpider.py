@@ -89,17 +89,20 @@ def read_excel(startNum,endNum,file='mission.xlsx'):
 	wb = openpyxl.load_workbook(file,read_only = True)
 	sheet = wb['mission']
 	for rowNum in range(startNum,endNum):
-		logging.debug(f'Reading row {rowNum}')
-		yield {
-		'rowNum':rowNum,
-		'url':sheet.cell(row=rowNum,column=1).value,
-		'aim':sheet.cell(row=rowNum,column=2).value,
-		'status':sheet.cell(row=rowNum,column=3).value,
-		'level':sheet.cell(row=rowNum,column=4).value,
-		'rules':sheet.cell(row=rowNum,column=5).value,
-		'saveFile':sheet.cell(row=rowNum,column=6).value,
-		'time':sheet.cell(row=rowNum,column=7).value
-		}
+		try:
+			logging.debug(f'Reading row {rowNum}')
+			yield {
+			'rowNum':rowNum,
+			'url':sheet.cell(row=rowNum,column=1).value,
+			'aim':sheet.cell(row=rowNum,column=2).value,
+			'status':sheet.cell(row=rowNum,column=3).value,
+			'level':sheet.cell(row=rowNum,column=4).value,
+			'rules':sheet.cell(row=rowNum,column=5).value,
+			'saveFile':sheet.cell(row=rowNum,column=6).value,
+			'time':sheet.cell(row=rowNum,column=7).value
+			}
+		except:
+			continue
 
 def write_in_excel(dict,file='mission.xlsx'):
 	wb = openpyxl.load_workbook(file)
