@@ -177,8 +177,7 @@ if __name__ == '__main__':
 #			write_data_in_missionList('https://www.biquge5200.cc/modules/article/search.php?searchkey='+line.strip(),\
 #				aim = 'contents',level = 2,rules = 'td.odd a')
 	lg = excel_max_row()
-	run(1,lg+1)
-'''
+
 	downloadThreads = []
 	for i in (1,lg,100):
 		logging.debug(f'Start Thread:{i}')
@@ -188,4 +187,3 @@ if __name__ == '__main__':
 
 	for dlt in downloadThreads:
 		dlt.join()
-'''
