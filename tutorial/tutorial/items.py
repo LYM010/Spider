@@ -15,5 +15,12 @@ class DmozItem(scrapy.Item):
     link = scrapy.Field()
     desc = scrapy.Field()
 
+
 class BaiduItem(scrapy.Item):
-	title = scrapy.Field()
+    title = scrapy.Field()
+
+
+class MyxmlItem(scrapy.Item):
+    title = scrapy.Field()
+    link = scrapy.Field()
+    author = scrapy.Field()

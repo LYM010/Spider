@@ -28,15 +28,6 @@ def get_download_url(url):
 if __name__ == '__main__':
     url = "http://www.zxcs8.com/"
     headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15'}
-    urlList = []
-    with open('link.txt', 'r') as f:
-        for line in f.readlines():
-            link = get_download_url(line.strip())
-            print(link)
-'''
-    for l1 in get_links(url):
-        with open('link.txt', 'a') as f:
-            f.write(l1 + '\n')
 
     r = requests.get('http://www.zxcs8.com/post/11169')
     result = BeautifulSoup(r.text, features='html.parser').select('.filetit a')
@@ -45,4 +36,14 @@ if __name__ == '__main__':
             print(e.get('href'))
     else:
         print("not found")
+
+'''
+    urlList = []
+    for l1 in get_links(url):
+        with open('link.txt', 'a') as f:
+            f.write(l1 + '\n')
+    with open('link.txt', 'r') as f:
+        for line in f.readlines():
+            link = get_download_url(line.strip())
+            print(link)
 '''
