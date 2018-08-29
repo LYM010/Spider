@@ -14,3 +14,6 @@ class DmozItem(scrapy.Item):
     title = scrapy.Field()
     link = scrapy.Field()
     desc = scrapy.Field()
+
+class BaiduItem(scrapy.Item):
+	title = scrapy.Field()
